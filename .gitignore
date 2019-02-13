@@ -5,3 +5,4 @@ __pycache__
 PIPENV_VENV_IN_PROJECT
 .idea
 .env
+*.db

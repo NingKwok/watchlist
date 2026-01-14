@@ -1,2 +1,2 @@
 import sys
-print("当前Pyton解释器：" + sys.executable)
+print("当前Python解释器：" + sys.executable)

@@ -1,0 +1,266 @@
+{% extends "base.html" %}
+
+{% block title %}我的电影看板{% endblock %}
+
+{% block content %}
+<style>
+    /* 电影卡片样式 */
+    .movie-card {
+        border: none;
+        border-radius: 20px;
+        overflow: hidden;
+        transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+        height: 100%;
+    }
+
+    .movie-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 20px 40px rgba(102, 126, 234, 0.3);
+    }
+
+    .movie-card img {
+        transition: transform 0.4s ease;
+    }
+
+    .movie-card:hover img {
+        transform: scale(1.05);
+    }
+
+    .card-img-placeholder {
+        background: linear-gradient(135deg, #e0e5ec 0%, #f5f7fa 100%);
+        transition: all 0.3s ease;
+    }
+
+    .card-body {
+        padding: 24px;
+    }
+
+    .card-title {
+        font-weight: 700;
+        color: #2d3748;
+        font-size: 1.25rem;
+        margin-bottom: 16px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+
+    .movie-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .movie-info i {
+        color: #667eea;
+        font-size: 1rem;
+    }
+
+    .movie-info small {
+        color: #718096;
+        font-weight: 500;
+    }
+
+    .rating-badge {
+        background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+        color: white;
+        padding: 6px 14px;
+        border-radius: 20px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        display: inline-flex;
+        align-items: center;
+        gap: 4px;
+    }
+
+    .card-footer {
+        border-top: 1px solid #edf2f7;
+        padding: 16px 24px;
+        background-color: #ffffff;
+    }
+
+    .btn-action {
+        padding: 8px 20px;
+        border-radius: 10px;
+        font-weight: 600;
+        font-size: 0.9rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-edit {
+        background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+        border: none;
+        color: white;
+    }
+
+    .btn-edit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(79, 172, 254, 0.4);
+    }
+
+    .btn-delete {
+        background: linear-gradient(135deg, #eb3349 0%, #f45c43 100%);
+        border: none;
+        color: white;
+    }
+
+    .btn-delete:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(235, 51, 73, 0.4);
+    }
+
+    .btn-add {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border: none;
+        color: white;
+        padding: 12px 28px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-add:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+    }
+
+    .empty-state {
+        background: linear-gradient(135deg, #e0e5ec 0%, #f5f7fa 100%);
+        border-radius: 20px;
+        padding: 60px 30px;
+        text-align: center;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+    }
+
+    .empty-state h4 {
+        color: #2d3748;
+        font-weight: 700;
+        margin-bottom: 12px;
+    }
+
+    .empty-state p {
+        color: #718096;
+        font-size: 1.1rem;
+    }
+
+    .empty-state-icon {
+        font-size: 5rem;
+        margin-bottom: 20px;
+        display: inline-block;
+        animation: float 3s ease-in-out infinite;
+    }
+
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0);
+        }
+        50% {
+            transform: translateY(-15px);
+        }
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .movie-card {
+            border-radius: 15px;
+        }
+
+        .card-body {
+            padding: 20px;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+        }
+
+        .btn-action {
+            padding: 6px 16px;
+            font-size: 0.85rem;
+        }
+    }
+</style>
+
+<!-- 页面标题 -->
+<div class="page-header">
+    <div class="row align-items-center">
+        <div class="col">
+            <h1>🎬 我的电影看板</h1>
+            <p>记录你精彩的电影之旅</p>
+        </div>
+        <div class="col-auto">
+            <a href="{{ url_for('add') }}" class="btn btn-add">
+                <i class="bi bi-plus-circle me-2"></i> 添加电影
+            </a>
+        </div>
+    </div>
+</div>
+
+{% if movies %}
+    <div class="row">
+        {% for movie in movies %}
+        <div class="col-md-6 col-lg-4 mb-4">
+            <div class="card movie-card">
+                {% if movie.cover_image %}
+                    <img src="{{ url_for('uploaded_file', filename=movie.cover_image) }}"
+                         class="card-img-top"
+                         alt="{{ movie.title }}"
+                         style="height: 280px; object-fit: cover;">
+                {% else %}
+                    <div class="card-img-top card-img-placeholder d-flex align-items-center justify-content-center"
+                         style="height: 280px;">
+                        <i class="bi bi-film text-muted" style="font-size: 4rem; opacity: 0.3;"></i>
+                    </div>
+                {% endif %}
+                <div class="card-body">
+                    <h5 class="card-title" title="{{ movie.title }}">{{ movie.title }}</h5>
+
+                    <div class="movie-info">
+                        <i class="bi bi-calendar3"></i>
+                        <small>{{ movie.year }}</small>
+                    </div>
+
+                    <div class="movie-info">
+                        <i class="bi bi-badge-hd"></i>
+                        <small>{{ movie.genre }}</small>
+                    </div>
+
+                    <div class="mt-3">
+                        <span class="rating-badge">
+                            <i class="bi bi-star-fill"></i> {{ movie.rating }}/10
+                        </span>
+                    </div>
+
+                    {% if movie.notes %}
+                        <p class="card-text mt-3 mb-0" style="color: #4a5568; font-size: 0.95rem;">
+                            <small>{{ movie.notes }}</small>
+                        </p>
+                    {% endif %}
+                </div>
+                <div class="card-footer">
+                    <div class="d-flex gap-2">
+                        <a href="{{ url_for('edit', id=movie.id) }}" class="btn btn-action btn-edit flex-grow-1">
+                            <i class="bi bi-pencil me-1"></i> 编辑
+                        </a>
+                        <form action="{{ url_for('delete', id=movie.id) }}" method="post" class="flex-grow-1">
+                            <button type="submit" class="btn btn-action btn-delete w-100"
+                                    onclick="return confirm('确定要删除《{{ movie.title }}》吗？此操作不可撤销！')">
+                                <i class="bi bi-trash me-1"></i> 删除
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+{% else %}
+    <div class="empty-state">
+        <div class="empty-state-icon">🎬</div>
+        <h4>还没有添加任何电影</h4>
+        <p>点击右上角"添加电影"按钮开始记录你的观影经历吧！</p>
+    </div>
+{% endif %}
+{% endblock %}

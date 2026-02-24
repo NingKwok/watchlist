@@ -1,6 +1,28 @@
+# Python
 *.pyc
 *~
 __pycache__
 .DS_Store
-watchlist-venv
+*.py[cod]
+*$py.class
+*.so
+
+# Virtual Environment
+watchlist-venv/
+
+# Environment Variables
 .env
+
+# Database
+watchlist.db
+*.db
+*.db-journal
+
+# Uploaded Files
+uploads/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,0 +1,329 @@
+{% extends "base.html" %}
+
+{% block title %}{{ title }}{% endblock %}
+
+{% block content %}
+<style>
+    /* 表单容器 */
+    .form-container {
+        background: linear-gradient(135deg, #f5f7fa 0%, #e0e5ec 100%);
+        border-radius: 20px;
+        padding: 30px;
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+    }
+
+    .form-title {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px 30px;
+        border-radius: 15px;
+        margin: -30px -30px 30px -30px;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+    }
+
+    .form-title h2 {
+        margin: 0;
+        font-weight: 700;
+        font-size: 1.75rem;
+    }
+
+    /* 表单字段 */
+    .form-group {
+        margin-bottom: 24px;
+    }
+
+    .form-label {
+        font-weight: 600;
+        color: #2d3748;
+        margin-bottom: 10px;
+        font-size: 0.95rem;
+    }
+
+    .form-control,
+    .form-select {
+        border: 2px solid #e2e8f0;
+        border-radius: 12px;
+        padding: 12px 16px;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+        background-color: white;
+    }
+
+    .form-control:focus,
+    .form-select:focus {
+        border-color: #667eea;
+        box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+        background-color: white;
+    }
+
+    .form-control::placeholder {
+        color: #a0aec0;
+    }
+
+    /* 图片预览 */
+    .current-cover {
+        background: white;
+        border-radius: 15px;
+        padding: 20px;
+        margin-bottom: 20px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+    }
+
+    .cover-preview {
+        max-width: 200px;
+        border-radius: 12px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+        transition: transform 0.3s ease;
+    }
+
+    .cover-preview:hover {
+        transform: scale(1.05);
+    }
+
+    /* 文件上传 */
+    .file-upload-wrapper {
+        position: relative;
+        overflow: hidden;
+    }
+
+    .form-control[type="file"] {
+        padding: 10px 0;
+    }
+
+    .form-text {
+        color: #718096;
+        font-size: 0.85rem;
+        margin-top: 8px;
+    }
+
+    /* 分割线 */
+    .divider {
+        border: none;
+        height: 2px;
+        background: linear-gradient(90deg, #667eea 0%, #764ba2 50%, transparent 100%);
+        margin: 30px 0;
+        opacity: 0.3;
+    }
+
+    /* 按钮 */
+    .btn-submit {
+        background: linear-gradient(135deg, #11998e 0%, #38ef7d 100%);
+        border: none;
+        color: white;
+        padding: 12px 32px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(17, 153, 142, 0.4);
+        background: linear-gradient(135deg, #0e8a7c 0%, #32d66e 100%);
+    }
+
+    .btn-cancel {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        color: white;
+        padding: 12px 32px;
+        border-radius: 12px;
+        font-weight: 600;
+        font-size: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .btn-cancel:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+    }
+
+    .btn-group {
+        display: flex;
+        gap: 12px;
+        justify-content: flex-start;
+    }
+
+    /* 表单验证 */
+    .is-invalid {
+        border-color: #f56565 !important;
+        animation: shake 0.5s ease-in-out;
+    }
+
+    @keyframes shake {
+        0%, 100% { transform: translateX(0); }
+        25% { transform: translateX(-10px); }
+        75% { transform: translateX(10px); }
+    }
+
+    .invalid-feedback {
+        color: #f56565;
+        font-size: 0.85rem;
+        margin-top: 6px;
+    }
+
+    /* 响应式调整 */
+    @media (max-width: 768px) {
+        .form-container {
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .form-title {
+            padding: 16px 20px;
+            margin: -20px -20px 20px -20px;
+            border-radius: 12px;
+        }
+
+        .form-title h2 {
+            font-size: 1.5rem;
+        }
+
+        .btn-group {
+            flex-direction: column;
+        }
+
+        .btn-submit,
+        .btn-cancel {
+            width: 100%;
+        }
+    }
+</style>
+
+<div class="row justify-content-center">
+    <div class="col-md-10 col-lg-8">
+        <div class="form-container">
+            <div class="form-title">
+                <h2><i class="bi bi-pencil-square me-2"></i>{{ title }}</h2>
+            </div>
+
+            <!-- 添加 enctype="multipart/form-data" 以支持文件上传 -->
+            <form method="post" enctype="multipart/form-data" class="needs-validation" novalidate>
+                <!-- CSRF 令牌 -->
+                {{ form.hidden_tag() }}
+
+                <!-- 封面图片预览（仅编辑模式） -->
+                {% if movie and movie.cover_image %}
+                <div class="current-cover">
+                    <div class="d-flex align-items-center justify-content-between mb-3">
+                        <label class="form-label mb-0">
+                            <i class="bi bi-image me-2"></i>当前封面
+                        </label>
+                        <span class="badge bg-info" style="background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);">已上传</span>
+                    </div>
+                    <div class="text-center">
+                        <img src="{{ url_for('uploaded_file', filename=movie.cover_image) }}"
+                             alt="当前封面"
+                             class="cover-preview">
+                    </div>
+                    <div class="form-check mt-3">
+                        {{ form.remove_cover(class="form-check-input") }}
+                        {{ form.remove_cover.label(class="form-check-label ms-2") }}
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- 封面图片上传 -->
+                <div class="form-group">
+                    <label class="form-label">
+                        <i class="bi bi-cloud-upload me-2"></i>{{ form.cover_image.label.text }}
+                    </label>
+                    <div class="file-upload-wrapper">
+                        {{ form.cover_image(class="form-control" + (" is-invalid" if form.cover_image.errors else "")) }}
+                    </div>
+                    <div class="form-text">
+                        <i class="bi bi-info-circle me-1"></i>
+                        支持 JPG、JPEG、PNG、GIF、WEBP 格式，最大 5MB
+                    </div>
+                    {% if form.cover_image.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            {% for error in form.cover_image.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <hr class="divider">
+
+                <!-- 电影标题 -->
+                <div class="form-group">
+                    <label class="form-label" for="title">
+                        <i class="bi bi-film me-2"></i>{{ form.title.label.text }}
+                    </label>
+                    {{ form.title(class="form-control", id="title", placeholder="请输入电影标题") }}
+                    {% if form.title.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            {% for error in form.title.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 上映年份 -->
+                <div class="form-group">
+                    <label class="form-label" for="year">
+                        <i class="bi bi-calendar3 me-2"></i>{{ form.year.label.text }}
+                    </label>
+                    {{ form.year(class="form-control", id="year", placeholder="例如：2024") }}
+                    {% if form.year.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            {% for error in form.year.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 电影类型 -->
+                <div class="form-group">
+                    <label class="form-label" for="genre">
+                        <i class="bi bi-badge-hd me-2"></i>{{ form.genre.label.text }}
+                    </label>
+                    {{ form.genre(class="form-select", id="genre") }}
+                    {% if form.genre.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            {% for error in form.genre.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 评分 -->
+                <div class="form-group">
+                    <label class="form-label" for="rating">
+                        <i class="bi bi-star me-2"></i>{{ form.rating.label.text }}
+                    </label>
+                    <div class="input-group">
+                        {{ form.rating(class="form-control", id="rating", placeholder="1-10") }}
+                        <span class="input-group-text" style="background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%); color: white; border: none;">
+                            <i class="bi bi-star-fill"></i> /10
+                        </span>
+                    </div>
+                    {% if form.rating.errors %}
+                        <div class="invalid-feedback">
+                            <i class="bi bi-exclamation-circle me-1"></i>
+                            {% for error in form.rating.errors %}{{ error }}{% endfor %}
+                        </div>
+                    {% endif %}
+                </div>
+
+                <!-- 备注 -->
+                <div class="form-group">
+                    <label class="form-label" for="notes">
+                        <i class="bi bi-chat-quote me-2"></i>{{ form.notes.label.text }}
+                    </label>
+                    {{ form.notes(class="form-control", id="notes", rows="4", placeholder="可选：写下你的观影笔记或感想") }}
+                </div>
+
+                <!-- 提交和取消按钮 -->
+                <div class="btn-group mt-4">
+                    {{ form.submit(class="btn btn-submit") }}
+                    <a href="{{ url_for('index') }}" class="btn btn-cancel">
+                        <i class="bi bi-arrow-left me-2"></i>取消
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
